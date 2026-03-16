@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Hospital, Droplet, Mail, Lock, MapPin, ShieldCheck, ArrowRight, Activity } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import axios from 'axios'
 
 // --- OVERKILL VALIDATION SCHEMA ---
 const registerSchema = z.object({
@@ -26,16 +27,33 @@ const Register = () => {
     defaultValues: { role: 'donor' }
   });
 
-  const onSubmit = (data) => {
-    console.log("Submitting to MongoDB:", data);
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#dc2626', '#000000', '#ffffff']
-    });
-    alert("Registration Successful! Data ready for Backend.");
-  };
+  const onSubmit = async (data) => {
+  try {
+    // 1. Send the data to your Node.js server
+    const response = await axios.post('http://localhost:5000/api/auth/register', data);
+    
+    if (response.data.success) {
+      // 2. Trigger the overkill celebration
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#dc2626', '#000000', '#ffffff']
+      });
+
+      // 3. Simple Redirect to Login after 2 seconds
+      setTimeout(() => {
+        window.location.href = '/login'; 
+        // Or use navigate('/login') if you have the hook set up
+      }, 2000);
+    }
+  } catch (err) {
+    // 4. Alert the error message from your Backend (e.g., "User already exists")
+    const errorMsg = err.response?.data?.message || "Registration Failed";
+    alert(errorMsg);
+    console.error("Registration Failed:", errorMsg);
+  }
+};
 
   return (
     <div className="min-h-screen pt-24 pb-12 flex items-center justify-center bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-red-50 via-white to-gray-100">
