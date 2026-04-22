@@ -1,65 +1,264 @@
 import React from 'react';
-import { Droplet, Hospital, Users, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { 
+  ArrowRight, Heart, Building2, Activity, ShieldCheck, 
+  Smartphone, Zap, Globe, Database, Droplet
+} from 'lucide-react';
+
+// --- ANIMATION VARIANTS ---
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
+};
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="bg-red-50 py-20 px-6 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-          Connecting <span className="text-red-600">Blood Donors</span> with Life-Savers
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-10">
-          A centralized platform for real-time blood inventory management, 
-          bridging the gap between donors, blood banks, and hospitals.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link to="/register" className="bg-red-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-red-700 transition flex items-center justify-center">
-            Donate Now <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-          <Link to="/login" className="border-2 border-red-600 text-red-600 px-8 py-3 rounded-md font-semibold hover:bg-red-50 transition">
-            Hospital Portal
-          </Link>
+    <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans selection:bg-red-200 overflow-hidden">
+      
+      {/* --- 1. NAVBAR --- */}
+      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-slate-100 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="text-red-600" size={28} />
+            <span className="text-2xl font-black italic tracking-tighter uppercase">BLOODLINK</span>
+          </div>
+          <div className="hidden md:flex gap-4">
+            <Link to="/login">
+              <button className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</button>
+            </Link>
+            <Link to="/register">
+              <button className="px-6 py-2.5 text-sm font-black bg-black text-white rounded-full hover:bg-red-600 transition-colors shadow-lg">Get Started</button>
+            </Link>
+          </div>
         </div>
-      </section>
+      </nav>
 
-      {/* Features Section */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-16">Three Integrated Interfaces</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      {/* --- 2. HERO SECTION --- */}
+      <section className="relative pt-40 pb-20 px-6 min-h-[90vh] flex flex-col justify-center items-center text-center">
+        {/* Subtle Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-red-500/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <motion.div 
+          initial="hidden" animate="visible" variants={staggerContainer}
+          className="relative z-10 max-w-4xl mx-auto"
+        >
+          <motion.div variants={fadeUp} className="inline-block mb-6 px-4 py-1.5 rounded-full bg-red-50 border border-red-100 text-red-600 font-bold text-xs uppercase tracking-widest">
+            The Next Generation of Blood Logistics
+          </motion.div>
           
-          {/* Donor Feature */}
-          <div className="text-center p-6 border rounded-xl shadow-sm hover:shadow-md transition">
-            <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Users className="text-red-600 h-8 w-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-4">For Donors</h3>
-            <p className="text-gray-600">Register as a donor, track your history, and find nearby blood donation camps effortlessly.</p>
+          <motion.h1 variants={fadeUp} className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8">
+            Synchronizing <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-400 italic">Supply & Demand.</span>
+          </motion.h1>
+          
+          <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
+            Nexus is a real-time telemetry ecosystem connecting verified donors directly to critical hospital requisitions. No delays. No blind spots. Just pure logistical precision.
+          </motion.p>
+          
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/register?role=donor">
+              <button className="w-full sm:w-auto px-8 py-4 bg-black text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-xl flex items-center justify-center gap-2 group">
+                Become a Donor <Heart size={18} className="group-hover:scale-110 transition-transform" />
+              </button>
+            </Link>
+            <Link to="/register?role=hospital">
+              <button className="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-[2rem] font-black uppercase tracking-widest hover:border-slate-400 transition-all flex items-center justify-center gap-2">
+                Register Hospital <Building2 size={18} />
+              </button>
+            </Link>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* --- 3. THE ECOSYSTEM (How it works) --- */}
+      <section className="py-32 px-6 bg-slate-900 text-white rounded-t-[4rem]">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">A Closed-Loop <span className="text-red-500 italic">Ecosystem.</span></h2>
+            <p className="text-slate-400 font-medium max-w-2xl mx-auto">Understanding the flow of operations from vein to vein.</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <motion.div 
+              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={fadeUp}
+              className="bg-slate-800/50 border border-slate-700 p-10 rounded-[3rem] relative overflow-hidden group hover:bg-slate-800 transition-colors"
+            >
+              <div className="w-16 h-16 bg-red-500/20 text-red-400 rounded-2xl flex items-center justify-center mb-8 border border-red-500/30">
+                <Smartphone size={32} />
+              </div>
+              <h3 className="text-2xl font-black uppercase mb-4">1. User Hub</h3>
+              <p className="text-slate-400 font-medium leading-relaxed">
+                Verified donors use the intuitive portal to track their impact, view real-time eligibility, and book collection slots. Every drop is logged to their personal impact history.
+              </p>
+            </motion.div>
+
+            {/* Step 2 */}
+            <motion.div 
+              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={fadeUp} transition={{ delay: 0.2 }}
+              className="bg-slate-800/50 border border-slate-700 p-10 rounded-[3rem] relative overflow-hidden group hover:bg-slate-800 transition-colors"
+            >
+              <div className="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-8 border border-blue-500/30">
+                <Database size={32} />
+              </div>
+              <h3 className="text-2xl font-black uppercase mb-4">2. Admin Matrix</h3>
+              <p className="text-slate-400 font-medium leading-relaxed">
+                The command center. Admins confirm physical collections, transforming appointments into tracked, barcode-verified inventory units with strict expiry telemetry.
+              </p>
+            </motion.div>
+
+            {/* Step 3 */}
+            <motion.div 
+              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={fadeUp} transition={{ delay: 0.4 }}
+              className="bg-slate-800/50 border border-slate-700 p-10 rounded-[3rem] relative overflow-hidden group hover:bg-slate-800 transition-colors"
+            >
+              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-8 border border-emerald-500/30">
+                <Building2 size={32} />
+              </div>
+              <h3 className="text-2xl font-black uppercase mb-4">3. Hospital Portal</h3>
+              <p className="text-slate-400 font-medium leading-relaxed">
+                Medical facilities broadcast emergency requisitions. The system cross-references the Admin Matrix, instantly matching available stock to critical demand.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- 4. FEATURE DEEP DIVE (Bento Style) --- */}
+      <section className="py-32 px-6">
+        <div className="max-w-7xl mx-auto space-y-32">
+          
+          {/* FOR DONORS */}
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <motion.div 
+              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+              className="lg:w-1/2 space-y-6"
+            >
+              <div className="flex items-center gap-2 text-red-600 font-black uppercase tracking-widest text-xs">
+                <Heart size={16} /> For Donors
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter">See Your <span className="italic text-red-600">Impact.</span></h2>
+              <p className="text-lg text-slate-500 font-medium">
+                Donating blood shouldn't feel like throwing a bottle into the ocean. With Nexus, you get a beautiful dashboard that tracks exactly how many units you've given and how many lives you've directly impacted.
+              </p>
+              <ul className="space-y-4 pt-4">
+                {['Live Contribution Pulse Graph', 'Historical Collection Logs', 'Digital Verification Status'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-700 font-bold">
+                    <CheckCircle /> {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+              className="lg:w-1/2 w-full bg-slate-100 rounded-[3rem] p-8 md:p-12 border-8 border-white shadow-2xl relative"
+            >
+               {/* Decorative Abstract UI element representing the dashboard */}
+               <div className="bg-white rounded-3xl p-6 shadow-sm mb-4 flex justify-between items-center">
+                 <div>
+                   <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Total Impact</p>
+                   <p className="text-4xl font-black">12 <span className="text-red-600 text-sm">UNITS</span></p>
+                 </div>
+                 <Droplet className="text-red-100" size={48} />
+               </div>
+               <div className="bg-white rounded-3xl p-6 shadow-sm h-32 flex items-end">
+                 <div className="w-full h-1/2 bg-gradient-to-t from-red-100 to-transparent border-t-2 border-red-500 rounded-t-lg"></div>
+               </div>
+            </motion.div>
           </div>
 
-          {/* Inventory Feature */}
-          <div className="text-center p-6 border rounded-xl shadow-sm hover:shadow-md transition">
-            <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Droplet className="text-red-600 h-8 w-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-4">Inventory Control</h3>
-            <p className="text-gray-600">Real-time tracking of blood groups, components, and expiry dates for blood bank staff.</p>
-          </div>
-
-          {/* Hospital Feature */}
-          <div className="text-center p-6 border rounded-xl shadow-sm hover:shadow-md transition">
-            <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Hospital className="text-red-600 h-8 w-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-4">For Hospitals</h3>
-            <p className="text-gray-600">Place urgent blood requests and track delivery status in real-time during emergencies.</p>
+          {/* FOR HOSPITALS */}
+          <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
+            <motion.div 
+              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+              className="lg:w-1/2 space-y-6"
+            >
+              <div className="flex items-center gap-2 text-slate-900 font-black uppercase tracking-widest text-xs">
+                <ShieldCheck size={16} /> For Facilities
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter">Zero-Latency <span className="italic text-slate-500">Requisitions.</span></h2>
+              <p className="text-lg text-slate-500 font-medium">
+                When seconds matter, you don't have time to make phone calls. The Hospital Hub allows facilities to broadcast encrypted blood requisitions with critical priority tags directly to the master inventory.
+              </p>
+              <ul className="space-y-4 pt-4">
+                {['Live GPS Hardware Tracking', 'One-Click Emergency Broadcasts', 'Real-Time Supply Matrix Access'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-700 font-bold">
+                    <CheckCircle /> {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+              className="lg:w-1/2 w-full bg-slate-900 rounded-[3rem] p-8 md:p-12 shadow-2xl relative"
+            >
+               <div className="bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-700">
+                 <div className="flex justify-between items-center mb-6">
+                   <p className="text-xs font-black text-white uppercase tracking-widest">Priority Requisition</p>
+                   <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-[10px] font-black uppercase">Critical</span>
+                 </div>
+                 <div className="grid grid-cols-4 gap-2 mb-6">
+                    <div className="py-2 bg-red-600 text-white rounded-xl text-center font-black text-sm">O-</div>
+                    <div className="py-2 bg-slate-700 text-slate-400 rounded-xl text-center font-black text-sm">A+</div>
+                    <div className="py-2 bg-slate-700 text-slate-400 rounded-xl text-center font-black text-sm">B+</div>
+                 </div>
+                 <button className="w-full py-4 bg-white text-black font-black uppercase rounded-2xl flex items-center justify-center gap-2">
+                   Transmitting <Globe size={16} className="animate-pulse" />
+                 </button>
+               </div>
+            </motion.div>
           </div>
 
         </div>
       </section>
+
+      {/* --- 5. CTA FOOTER --- */}
+      <section className="py-32 px-6">
+        <motion.div 
+          initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+          className="max-w-5xl mx-auto bg-black text-white rounded-[4rem] p-12 md:p-20 text-center relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-600/20 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
+          
+          <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-6 relative z-10">Join the <span className="italic text-red-500">Network.</span></h2>
+          <p className="text-slate-400 font-medium text-lg max-w-2xl mx-auto mb-10 relative z-10">
+            Whether you are an individual looking to track your impact, or a medical facility needing a reliable supply chain, Nexus is ready.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+            <Link to="/register?role=donor">
+              <button className="w-full sm:w-auto px-10 py-5 bg-red-600 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-red-500 transition-all shadow-xl shadow-red-600/20">
+                Register as Donor
+              </button>
+            </Link>
+            <Link to="/register?role=hospital">
+              <button className="w-full sm:w-auto px-10 py-5 bg-slate-800 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-slate-700 transition-all">
+                Partner Facility
+              </button>
+            </Link>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Helper Component for Checkmarks */}
     </div>
   );
 };
+
+// Mini internal component for clean code
+const CheckCircle = () => (
+  <div className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  </div>
+);
 
 export default Home;

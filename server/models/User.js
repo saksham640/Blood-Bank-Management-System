@@ -10,10 +10,21 @@ const userSchema = new mongoose.Schema({
     enum: ['donor', 'admin', 'hospital'] 
   },
   // Conditional Data
-  bloodGroup: { type: String, required: function() { return this.role === 'donor'; } },
-  licenseId: { type: String, required: function() { return this.role === 'hospital'; } },
+  bloodGroup: { 
+    type: String, 
+    required: function() { return this.role === 'donor'; } 
+  },
+  licenseId: { 
+    type: String, 
+    required: function() { return this.role === 'hospital'; } 
+  },
   location: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  
+  // STATS SECTION - Ensure these are initialized
+  donationsCount: { type: Number, default: 0, min: 0 },
+  totalVolume: { type: Number, default: 0, min: 0 },
+  lastDonationDate: { type: Date }  
 });
 
 module.exports = mongoose.model('User', userSchema);

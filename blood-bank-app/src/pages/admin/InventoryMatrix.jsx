@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { 
   Search, Filter, Download, MoreHorizontal, AlertOctagon, 
-  CheckCircle2, Clock, Trash2, Send, Beaker, ShieldAlert
+  CheckCircle2, Clock, Trash2, Send, Beaker, ShieldAlert, User
 } from 'lucide-react';
 
 const InventoryMatrix = () => {
@@ -13,7 +13,6 @@ const InventoryMatrix = () => {
   const [filterGroup, setFilterGroup] = useState('All');
   const [selectedUnits, setSelectedUnits] = useState([]);
 
-  // Trivial Backend Fetching
   const fetchInventory = async () => {
     try {
       setIsLoading(true);
@@ -30,14 +29,13 @@ const InventoryMatrix = () => {
     fetchInventory();
   }, []);
 
-  // Frontend Filtering Logic (Simple & Fast)
   const filteredInventory = inventory.filter(unit => {
-    const matchesSearch = unit.unitId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = unit.unitId.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (unit.donorName && unit.donorName.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesGroup = filterGroup === 'All' || unit.bloodGroup === filterGroup;
     return matchesSearch && matchesGroup;
   });
 
-  // Simple Delete Logic
   const handlePurge = async (id) => {
     if (window.confirm("WARNING: Purging this unit will permanently remove it from the Atlas database. Proceed?")) {
       try {
@@ -49,7 +47,6 @@ const InventoryMatrix = () => {
     }
   };
 
-  // Select all toggle
   const toggleSelectAll = () => {
     if (selectedUnits.length === filteredInventory.length) {
       setSelectedUnits([]);
@@ -66,7 +63,6 @@ const InventoryMatrix = () => {
     }
   };
 
-  // Helper: Calculate Expiry Health (0 to 100%)
   const getExpiryHealth = (collection, expiry) => {
     const total = new Date(expiry) - new Date(collection);
     const remaining = new Date(expiry) - new Date();
@@ -108,20 +104,17 @@ const InventoryMatrix = () => {
       {/* CONTROL PANEL */}
       <div className="bg-white/60 backdrop-blur-xl border-b border-gray-200 px-8 py-4 shrink-0 z-10">
         <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row gap-4 justify-between items-center">
-          
-          {/* Search */}
           <div className="relative w-full md:w-96 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="Query Unit ID or Barcode..." 
+              placeholder="Search Unit ID or Donor Name..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-white border border-gray-200 rounded-xl pl-12 pr-4 py-2.5 outline-none focus:ring-4 ring-red-500/10 focus:border-red-500 font-medium transition-all shadow-sm text-gray-800"
             />
           </div>
 
-          {/* Filters */}
           <div className="flex items-center gap-3 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
             <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm">
               <Filter size={16} className="text-gray-400" />
@@ -137,14 +130,12 @@ const InventoryMatrix = () => {
               </select>
             </div>
           </div>
-
         </div>
       </div>
 
       {/* THE DATA GRID */}
       <main className="flex-1 overflow-auto p-8 relative">
         <div className="max-w-screen-2xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead className="bg-gray-50/80 backdrop-blur-sm sticky top-0 z-20">
               <tr>
@@ -152,6 +143,7 @@ const InventoryMatrix = () => {
                   <input type="checkbox" onChange={toggleSelectAll} checked={selectedUnits.length === filteredInventory.length && filteredInventory.length > 0} className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500" />
                 </th>
                 <th className="p-5 border-b border-gray-100 text-xs font-black text-gray-400 uppercase tracking-widest">Unit ID</th>
+                <th className="p-5 border-b border-gray-100 text-xs font-black text-gray-400 uppercase tracking-widest">Donor Identity</th>
                 <th className="p-5 border-b border-gray-100 text-xs font-black text-gray-400 uppercase tracking-widest">Blood Group</th>
                 <th className="p-5 border-b border-gray-100 text-xs font-black text-gray-400 uppercase tracking-widest">Viability Timeline</th>
                 <th className="p-5 border-b border-gray-100 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
@@ -188,6 +180,16 @@ const InventoryMatrix = () => {
                         </div>
                       </td>
 
+                      {/* --- DONOR NAME CELL --- */}
+                      <td className="p-5">
+                        <div className="flex items-center gap-2">
+                          <User size={14} className="text-gray-400" />
+                          <span className="text-sm font-black text-gray-700 uppercase tracking-tight">
+                            {unit.donorName || "NEXUS.DONOR"}
+                          </span>
+                        </div>
+                      </td>
+
                       <td className="p-5">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-50 to-red-100 border border-red-200 flex items-center justify-center shadow-sm">
                           <span className="text-red-700 font-black text-xl">{unit.bloodGroup}</span>
@@ -201,7 +203,6 @@ const InventoryMatrix = () => {
                             Exp: {new Date(unit.expiryDate).toLocaleDateString()}
                           </span>
                         </div>
-                        {/* Overkill Progress Bar */}
                         <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                           <div 
                             className={`h-full rounded-full transition-all duration-1000 ${isExpiring ? 'bg-red-500' : 'bg-green-500'}`}
@@ -220,27 +221,21 @@ const InventoryMatrix = () => {
                       </td>
 
                       <td className="p-5 text-right">
-                        {/* Overkill Action Menu Group */}
                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors tooltip-trigger" title="Dispatch to Hospital">
-                            <Send size={18} onClick={()=>{console.log(1)}}/>
+                          <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                            <Send size={18} />
                           </button>
-                          <button className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Mark Contaminated">
+                          <button className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors">
                             <ShieldAlert size={18} />
                           </button>
                           <div className="w-px h-6 bg-gray-200 self-center mx-1"></div>
                           <button 
                             onClick={() => handlePurge(unit._id)}
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
-                            title="Purge Unit"
                           >
                             <Trash2 size={18} />
                           </button>
                         </div>
-                        {/* Fallback for mobile/no-hover */}
-                        <button className="md:hidden p-2 text-gray-400">
-                          <MoreHorizontal size={20} />
-                        </button>
                       </td>
                     </motion.tr>
                   );
@@ -248,8 +243,7 @@ const InventoryMatrix = () => {
               </AnimatePresence>
             </tbody>
           </table>
-
-          {/* Empty State */}
+          
           {!isLoading && filteredInventory.length === 0 && (
             <div className="p-16 text-center">
               <AlertOctagon size={48} className="mx-auto text-gray-300 mb-4" />

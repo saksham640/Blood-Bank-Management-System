@@ -29,7 +29,7 @@ const Navbar = () => {
   const activeLinks = role ? navLinks[role] : [];
 
   return (
-    <nav className="fixed top-4 inset-x-0 z-50 flex justify-center px-4">
+    <nav className="top-4 inset-x-0 z-50 flex justify-center px-4">
       {/* Main Glass Container */}
       <motion.div 
         initial={{ y: -100 }}

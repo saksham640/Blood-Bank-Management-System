@@ -7,6 +7,11 @@ const inventorySchema = new mongoose.Schema({
     enum: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] 
   },
   unitId: { type: String, required: true, unique: true }, // The barcode
+  
+  // --- ADDED FOR TRACEABILITY ---
+  donorName: { type: String }, // Stores the name for the Matrix view
+  donorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Links back to the donor's profile
+  
   collectionDate: { type: Date, required: true },
   expiryDate: { type: Date, required: true },
   status: { 
