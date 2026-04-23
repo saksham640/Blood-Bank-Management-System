@@ -10,13 +10,19 @@ import InventoryMatrix from './pages/admin/InventoryMatrix';
 import UserPortal from './pages/user/UserPortal';
 import HospitalPortal from './pages/hospital/HospitalPortal';
 import DonorRegistry from './pages/admin/DonorRegistry';
-// This Layout component ensures the Navbar stays at the top on every page
+
+// --- THE FIX: GLOBAL SPACING LAYOUT ---
 const Layout = () => {
   return (
-    <>
+    <div className="min-h-screen bg-[#f8fafc]">
       <Navbar />
-      <Outlet /> {/* This is where the specific pages (Home, Login, etc.) will render */}
-    </>
+      {/* pt-28 (112px) ensures content starts below the Navbar.
+          We use a motion.div for a smooth page transition effect 
+      */}
+      <main className="pt-32 pb-12">
+        <Outlet /> 
+      </main>
+    </div>
   );
 };
 
@@ -48,7 +54,9 @@ const router = createBrowserRouter([
       {
         path: "/donor",
         element: (
-            <UserPortal />
+          <ProtectedRoute allowedRoles={['donor']}>
+             <UserPortal />
+          </ProtectedRoute>
         ),
       },
       {
@@ -59,7 +67,7 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-            {
+      {
         path: "/hospital",
         element: (
           <ProtectedRoute allowedRoles={['hospital']}>
@@ -67,7 +75,7 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-                  {
+      {
         path: "admin/donor-database",
         element: (
           <ProtectedRoute allowedRoles={['admin']}>
