@@ -1,3 +1,5 @@
+
+// First we will run "npm install to installl all the dependencies"
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
