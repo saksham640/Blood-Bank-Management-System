@@ -129,7 +129,7 @@ const AdminDashboard = () => {
             <Droplet className="text-red-500 h-10 w-10" fill="currentColor" />
             {isSidebarOpen && (
               <span className="text-2xl font-black tracking-tight uppercase italic">
-                Nexus<span className="text-red-500">.Admin</span>
+                Blood<span className="text-red-500">Link</span>
               </span>
             )}
           </div>
@@ -137,7 +137,7 @@ const AdminDashboard = () => {
             {[
               { icon: Activity, label: 'Live Dashboard', active: true },
               { icon: Droplet, label: 'Inventory Matrix', path: '/admin/matrix' },
-              { icon: Users, label: 'Donor Database' },
+              { icon: Users, label: 'Donor Database', path: '/admin/donor-database' },
               { icon: ShieldAlert, label: 'Emergency Protocol' },
             ].map((item, idx) => (
               <Link key={idx} to={item.path || '#'}>

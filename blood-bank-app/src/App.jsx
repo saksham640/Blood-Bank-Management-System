@@ -9,6 +9,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import InventoryMatrix from './pages/admin/InventoryMatrix';
 import UserPortal from './pages/user/UserPortal';
 import HospitalPortal from './pages/hospital/HospitalPortal';
+import DonorRegistry from './pages/admin/DonorRegistry';
 // This Layout component ensures the Navbar stays at the top on every page
 const Layout = () => {
   return (
@@ -63,6 +64,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['hospital']}>
             <HospitalPortal />
+          </ProtectedRoute>
+        ),
+      },
+                  {
+        path: "admin/donor-database",
+        element: (
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DonorRegistry />
           </ProtectedRoute>
         ),
       },

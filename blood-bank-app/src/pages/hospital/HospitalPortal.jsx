@@ -8,65 +8,63 @@ import {
 import axios from 'axios';
 
 const HospitalPortal = () => {
+  // --- 1. GET AUTHENTICATED USER DATA ---
+  const user = JSON.parse(localStorage.getItem('user')); 
+  const hospitalName = user?.name || "Facility Unknown";
+  const hospitalCoords = user?.coords; // { lat, lng } from registration
+
   const [bloodGroup, setBloodGroup] = useState('O+');
   const [urgency, setUrgency] = useState('Critical');
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [location, setLocation] = useState(null);
 
-  const HOSPITAL_NAME = "Fortis Escorts Hub";
-
-  // --- 1. FETCH DATA & LOCATION ---
   useEffect(() => {
-    fetchRequests();
-    
-    // HTML5 Real-Time Geolocation API
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.log("Location access denied.", err),
-        { enableHighAccuracy: true }
-      );
+    if (hospitalName) {
+      fetchRequests();
     }
-  }, []);
+  }, [hospitalName]);
 
+  // --- 2. FETCH ONLY THIS HOSPITAL'S REQUESTS ---
   const fetchRequests = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/requests');
-      setRequests(res.data.filter(r => r.hospitalName === HOSPITAL_NAME));
-    } catch (err) { console.error("Sync Error", err); }
+      // Changed endpoint to fetch specific hospital data from the backend
+      const res = await axios.get(`http://localhost:5000/api/requests/hospital/${hospitalName}`);
+      setRequests(res.data);
+    } catch (err) { 
+      console.error("Sync Error", err); 
+    }
   };
 
-  // --- 2. CREATE REQUEST ---
-    const handleRequest = async () => {
-    if (!location) return alert("Satellite Lock Required. Please allow location access.");
+  // --- 3. CREATE REQUEST USING REGISTERED COORDS ---
+  const handleRequest = async () => {
+    if (!hospitalCoords) {
+      return alert("Geospatial Error: No registered coordinates found for this facility.");
+    }
     
     setIsLoading(true);
     try {
         await axios.post('http://localhost:5000/api/requests/create', {
-        hospitalName: HOSPITAL_NAME,
-        bloodGroup,
-        urgency,
-        // SENDING THE REAL COORDINATES HERE
-        location: { lat: location.lat, lng: location.lng }, 
-        status: 'pending'
+          hospitalName: hospitalName,
+          bloodGroup,
+          urgency,
+          // FIX: Now using the static coordinates from the database, not the browser GPS
+          location: { lat: hospitalCoords.lat, lng: hospitalCoords.lng }, 
+          status: 'pending'
         });
         fetchRequests();
     } catch (err) {
-        alert("Transmission Failed.");
+        alert("Transmission Failed: " + (err.response?.data?.message || "Server Error"));
     } finally {
         setIsLoading(false);
     }
-    };
+  };
 
-  // --- 3. CANCEL REQUEST ---
   const cancelRequest = async (id) => {
-    // Optimistic UI Update for instant feedback
     setRequests(prev => prev.filter(r => r._id !== id));
     try {
       await axios.delete(`http://localhost:5000/api/requests/${id}`);
     } catch (err) {
-      fetchRequests(); // Revert if backend fails
+      fetchRequests();
       alert("Failed to cancel request.");
     }
   };
@@ -86,19 +84,18 @@ const HospitalPortal = () => {
               Hospital<span className="text-red-600">.Hub</span>
             </motion.h1>
             <p className="text-slate-500 font-bold text-sm tracking-widest uppercase mt-1 flex items-center gap-2">
-              <Building size={14} /> {HOSPITAL_NAME}
+              <Building size={14} /> {hospitalName}
             </p>
           </div>
           <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full border border-green-200">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs font-black uppercase tracking-widest">Network Active</span>
+            <span className="text-xs font-black uppercase tracking-widest">Facility Online</span>
           </div>
         </header>
 
         {/* --- MAIN GRID --- */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
-          {/* 1. REQUISITION FORM (Col Span 8) */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="md:col-span-8 bg-white border-2 border-slate-100 rounded-[2.5rem] p-8 shadow-sm relative overflow-hidden"
@@ -107,26 +104,21 @@ const HospitalPortal = () => {
               <Send size={20} className="text-red-600" /> New Blood Requisition
             </h2>
 
-            {/* Blood Type Grid */}
-            <div className="mb-8">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Target Blood Group</label>
-              <div className="grid grid-cols-4 gap-3">
-                {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(type => (
-                  <button 
-                    key={type} onClick={() => setBloodGroup(type)}
-                    className={`py-4 rounded-2xl font-black transition-all border-2 ${
-                      bloodGroup === type 
-                        ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-200' 
-                        : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
+            <div className="grid grid-cols-4 gap-3 mb-8">
+              {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(type => (
+                <button 
+                  key={type} onClick={() => setBloodGroup(type)}
+                  className={`py-4 rounded-2xl font-black transition-all border-2 ${
+                    bloodGroup === type 
+                      ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-200' 
+                      : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
             </div>
 
-            {/* Urgency Selector */}
             <div className="mb-8">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Urgency Level</label>
               <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-100">
@@ -145,7 +137,6 @@ const HospitalPortal = () => {
               </div>
             </div>
 
-            {/* Action Button */}
             <button 
               onClick={handleRequest} disabled={isLoading}
               className="w-full py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] transition-all flex justify-center items-center gap-3 bg-black text-white hover:bg-red-600 shadow-xl disabled:opacity-50"
@@ -155,54 +146,42 @@ const HospitalPortal = () => {
             </button>
           </motion.div>
 
-          {/* 2. LIVE MAP (Col Span 4) */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="md:col-span-4 bg-white border-2 border-slate-100 rounded-[2.5rem] p-1 shadow-sm relative overflow-hidden min-h-[300px] flex flex-col"
           >
-             <div className="absolute top-6 left-6 z-10 pointer-events-none">
+             <div className="absolute top-6 left-6 z-10">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border border-slate-100 flex items-center gap-2 shadow-sm">
-                <MapPin size={12} className="text-red-600" /> GPS Lock Active
+                <MapPin size={12} className="text-red-600" /> Facility Pin
               </h3>
              </div>
 
-             {/* The Real Map Embedding */}
-             {location ? (
+             {hospitalCoords ? (
                <div className="w-full h-full min-h-[300px] rounded-[2.2rem] overflow-hidden">
                  <iframe 
                    title="Hospital Location Map"
                    width="100%" 
                    height="100%" 
                    frameBorder="0" 
-                   scrolling="no" 
-                   marginHeight="0" 
-                   marginWidth="0" 
-                   src={`https://www.openstreetmap.org/export/embed.html?bbox=${location.lng - 0.02},${location.lat - 0.02},${location.lng + 0.02},${location.lat + 0.02}&layer=mapnik&marker=${location.lat},${location.lng}`}
-                   className="pointer-events-none" // Prevents map from stealing scroll focus
+                   src={`https://www.openstreetmap.org/export/embed.html?bbox=${hospitalCoords.lng - 0.01},${hospitalCoords.lat - 0.01},${hospitalCoords.lng + 0.01},${hospitalCoords.lat + 0.01}&layer=mapnik&marker=${hospitalCoords.lat},${hospitalCoords.lng}`}
+                   className="pointer-events-none"
                  />
                </div>
              ) : (
-               <div className="w-full h-full min-h-[300px] rounded-[2.2rem] bg-slate-50 flex items-center justify-center border border-slate-100">
-                 <div className="text-slate-400 flex flex-col items-center gap-2">
-                   <Crosshair size={32} className="animate-spin" />
-                   <p className="text-[10px] font-black uppercase tracking-widest">Locating Hospital...</p>
-                 </div>
+               <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                 <p className="text-xs font-black text-slate-400 uppercase">Awaiting GPS Uplink...</p>
                </div>
              )}
           </motion.div>
 
-          {/* 3. ACTIVE REQUESTS QUEUE (Col Span 12) */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="md:col-span-12 bg-white border-2 border-slate-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col"
           >
             <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
               <h2 className="text-xl font-black text-slate-900 flex items-center gap-2 uppercase tracking-widest">
-                <Clock size={20} className="text-red-600" /> Active Transmissions
+                <Clock size={20} className="text-red-600" /> My Requisitions
               </h2>
-              <span className="bg-slate-100 text-slate-600 px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
-                {requests.length} Pending
-              </span>
             </div>
 
             <div className="space-y-4">
@@ -210,37 +189,34 @@ const HospitalPortal = () => {
                 {requests.length === 0 ? (
                   <div className="py-12 flex flex-col items-center justify-center text-slate-400">
                     <ShieldAlert size={48} className="mb-4 opacity-50" />
-                    <p className="font-bold uppercase tracking-widest text-xs">No active requisitions</p>
+                    <p className="font-bold uppercase tracking-widest text-xs">No active transmissions</p>
                   </div>
                 ) : (
                   requests.map(req => (
                     <motion.div 
                       key={req._id}
-                      initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95, x: -20 }}
-                      className="p-5 rounded-2xl bg-slate-50 border border-slate-100 flex justify-between items-center group hover:border-slate-300 transition-all"
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }}
+                      className="p-5 rounded-2xl bg-slate-50 border border-slate-100 flex justify-between items-center"
                     >
                       <div className="flex items-center gap-6">
                         <div className="w-14 h-14 rounded-2xl bg-white border-2 border-slate-100 flex items-center justify-center shadow-sm">
                           <span className="text-xl font-black text-red-600">{req.bloodGroup}</span>
                         </div>
                         <div>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">REQ_ID: {req._id.substring(req._id.length - 6)}</p>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ID: {req._id.substring(req._id.length - 6)}</p>
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-black text-slate-800 uppercase italic">Awaiting Admin Dispatch</span>
+                            <span className="text-sm font-black text-slate-800 uppercase italic">Status: {req.status}</span>
                             <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${
                               req.urgency === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-700'
                             }`}>
-                              {req.urgency || "Routine"}
+                              {req.urgency}
                             </span>
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Delete Button */}
                       <button 
                         onClick={() => cancelRequest(req._id)}
-                        className="w-12 h-12 rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition-all shadow-sm"
-                        title="Cancel Request"
+                        className="w-12 h-12 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-red-600 flex items-center justify-center transition-all shadow-sm"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -253,7 +229,9 @@ const HospitalPortal = () => {
 
         </div>
       </div>
-      <NetworkRadar />
+      <div className="mt-12">
+        <NetworkRadar />
+      </div>
     </div>
   );
 };
