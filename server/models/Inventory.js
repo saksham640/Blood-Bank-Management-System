@@ -11,7 +11,7 @@ const inventorySchema = new mongoose.Schema({
   // --- ADDED FOR TRACEABILITY ---
   donorName: { type: String }, // Stores the name for the Matrix view
   donorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Links back to the donor's profile
-  
+  hubId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hub' },
   collectionDate: { type: Date, required: true },
   expiryDate: { type: Date, required: true },
   status: { 

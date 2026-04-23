@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, Heart, Building2, Activity, ShieldCheck, 
-  Smartphone, Zap, Globe, Database, Droplet
+  Smartphone, Zap, Globe, Database, Droplet, MapPin, Navigation
 } from 'lucide-react';
 
 // --- ANIMATION VARIANTS ---
@@ -26,7 +26,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="text-red-600" size={28} />
-            <span className="text-2xl font-black italic tracking-tighter uppercase">BLOODLINK</span>
+            <span className="text-2xl font-black italic tracking-tighter uppercase">Nexus</span>
           </div>
           <div className="hidden md:flex gap-4">
             <Link to="/login">
@@ -41,7 +41,6 @@ const Home = () => {
 
       {/* --- 2. HERO SECTION --- */}
       <section className="relative pt-40 pb-20 px-6 min-h-[90vh] flex flex-col justify-center items-center text-center">
-        {/* Subtle Background Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-red-500/5 rounded-full blur-[100px] pointer-events-none" />
         
         <motion.div 
@@ -49,7 +48,7 @@ const Home = () => {
           className="relative z-10 max-w-4xl mx-auto"
         >
           <motion.div variants={fadeUp} className="inline-block mb-6 px-4 py-1.5 rounded-full bg-red-50 border border-red-100 text-red-600 font-bold text-xs uppercase tracking-widest">
-            The Next Generation of Blood Logistics
+            Geospatial Blood Logistics
           </motion.div>
           
           <motion.h1 variants={fadeUp} className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8">
@@ -58,7 +57,7 @@ const Home = () => {
           </motion.h1>
           
           <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
-            Nexus is a real-time telemetry ecosystem connecting verified donors directly to critical hospital requisitions. No delays. No blind spots. Just pure logistical precision.
+            Nexus is a real-time telemetry ecosystem. We use algorithmic distance-matching to connect verified donors and physical network hubs directly to critical hospital requisitions.
           </motion.p>
           
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -76,15 +75,15 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* --- 3. THE ECOSYSTEM (How it works) --- */}
+      {/* --- 3. THE ECOSYSTEM (The Location Cycle) --- */}
       <section className="py-32 px-6 bg-slate-900 text-white rounded-t-[4rem]">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
             className="text-center mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">A Closed-Loop <span className="text-red-500 italic">Ecosystem.</span></h2>
-            <p className="text-slate-400 font-medium max-w-2xl mx-auto">Understanding the flow of operations from vein to vein.</p>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">A Geospatial <span className="text-red-500 italic">Ecosystem.</span></h2>
+            <p className="text-slate-400 font-medium max-w-2xl mx-auto">How we route life-saving resources based on physical proximity.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -94,11 +93,11 @@ const Home = () => {
               className="bg-slate-800/50 border border-slate-700 p-10 rounded-[3rem] relative overflow-hidden group hover:bg-slate-800 transition-colors"
             >
               <div className="w-16 h-16 bg-red-500/20 text-red-400 rounded-2xl flex items-center justify-center mb-8 border border-red-500/30">
-                <Smartphone size={32} />
+                <MapPin size={32} />
               </div>
-              <h3 className="text-2xl font-black uppercase mb-4">1. User Hub</h3>
+              <h3 className="text-2xl font-black uppercase mb-4">1. GPS Tagging</h3>
               <p className="text-slate-400 font-medium leading-relaxed">
-                Verified donors use the intuitive portal to track their impact, view real-time eligibility, and book collection slots. Every drop is logged to their personal impact history.
+                Admins establish physical "Network Hubs." When a donor provides blood, the unit is barcode-verified and locked to the exact GPS coordinates of that specific collection hub.
               </p>
             </motion.div>
 
@@ -107,12 +106,12 @@ const Home = () => {
               initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={fadeUp} transition={{ delay: 0.2 }}
               className="bg-slate-800/50 border border-slate-700 p-10 rounded-[3rem] relative overflow-hidden group hover:bg-slate-800 transition-colors"
             >
-              <div className="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-8 border border-blue-500/30">
-                <Database size={32} />
+              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-8 border border-emerald-500/30">
+                <Activity size={32} />
               </div>
-              <h3 className="text-2xl font-black uppercase mb-4">2. Admin Matrix</h3>
+              <h3 className="text-2xl font-black uppercase mb-4">2. Emergency Uplink</h3>
               <p className="text-slate-400 font-medium leading-relaxed">
-                The command center. Admins confirm physical collections, transforming appointments into tracked, barcode-verified inventory units with strict expiry telemetry.
+                Medical facilities broadcast critical requisitions. The Hospital Portal automatically embeds the facility's live GPS coordinates into the encrypted network request.
               </p>
             </motion.div>
 
@@ -121,12 +120,12 @@ const Home = () => {
               initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={fadeUp} transition={{ delay: 0.4 }}
               className="bg-slate-800/50 border border-slate-700 p-10 rounded-[3rem] relative overflow-hidden group hover:bg-slate-800 transition-colors"
             >
-              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-8 border border-emerald-500/30">
-                <Building2 size={32} />
+              <div className="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-8 border border-blue-500/30">
+                <Navigation size={32} />
               </div>
-              <h3 className="text-2xl font-black uppercase mb-4">3. Hospital Portal</h3>
+              <h3 className="text-2xl font-black uppercase mb-4">3. Smart Triage</h3>
               <p className="text-slate-400 font-medium leading-relaxed">
-                Medical facilities broadcast emergency requisitions. The system cross-references the Admin Matrix, instantly matching available stock to critical demand.
+                Our algorithm runs real-time distance calculations, scanning all active hubs to match the hospital with the closest available blood unit, drastically cutting transit times.
               </p>
             </motion.div>
           </div>
@@ -148,10 +147,10 @@ const Home = () => {
               </div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter">See Your <span className="italic text-red-600">Impact.</span></h2>
               <p className="text-lg text-slate-500 font-medium">
-                Donating blood shouldn't feel like throwing a bottle into the ocean. With Nexus, you get a beautiful dashboard that tracks exactly how many units you've given and how many lives you've directly impacted.
+                Donating blood shouldn't feel like throwing a bottle into the ocean. With Nexus, you get a beautiful dashboard that tracks exactly how many units you've given, which hubs you've supplied, and how many lives you've directly impacted.
               </p>
               <ul className="space-y-4 pt-4">
-                {['Live Contribution Pulse Graph', 'Historical Collection Logs', 'Digital Verification Status'].map((item, i) => (
+                {['Live Contribution Pulse Graph', 'Location-based Appointment Booking', 'Digital Verification Status'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 font-bold">
                     <CheckCircle /> {item}
                   </li>
@@ -162,7 +161,6 @@ const Home = () => {
               initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
               className="lg:w-1/2 w-full bg-slate-100 rounded-[3rem] p-8 md:p-12 border-8 border-white shadow-2xl relative"
             >
-               {/* Decorative Abstract UI element representing the dashboard */}
                <div className="bg-white rounded-3xl p-6 shadow-sm mb-4 flex justify-between items-center">
                  <div>
                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Total Impact</p>
@@ -176,21 +174,21 @@ const Home = () => {
             </motion.div>
           </div>
 
-          {/* FOR HOSPITALS */}
+          {/* GEOSPATIAL ROUTING (The Million Dollar Feature) */}
           <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
             <motion.div 
               initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
               className="lg:w-1/2 space-y-6"
             >
               <div className="flex items-center gap-2 text-slate-900 font-black uppercase tracking-widest text-xs">
-                <ShieldCheck size={16} /> For Facilities
+                <Globe size={16} /> Geospatial Intelligence
               </div>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter">Zero-Latency <span className="italic text-slate-500">Requisitions.</span></h2>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter">Proximity-Based <span className="italic text-slate-500">Logistics.</span></h2>
               <p className="text-lg text-slate-500 font-medium">
-                When seconds matter, you don't have time to make phone calls. The Hospital Hub allows facilities to broadcast encrypted blood requisitions with critical priority tags directly to the master inventory.
+                When seconds matter, you don't have time to manually search inventory. Our master matrix uses coordinate geometry to instantly route requested blood types from the closest physical hub to the requesting hospital.
               </p>
               <ul className="space-y-4 pt-4">
-                {['Live GPS Hardware Tracking', 'One-Click Emergency Broadcasts', 'Real-Time Supply Matrix Access'].map((item, i) => (
+                {['Haversine Distance Calculations', 'Live Facility Mapping', 'Automated Smart-Triage Matching'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 font-bold">
                     <CheckCircle /> {item}
                   </li>
@@ -199,20 +197,28 @@ const Home = () => {
             </motion.div>
             <motion.div 
               initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
-              className="lg:w-1/2 w-full bg-slate-900 rounded-[3rem] p-8 md:p-12 shadow-2xl relative"
+              className="lg:w-1/2 w-full bg-slate-900 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden"
             >
-               <div className="bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-700">
+               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:24px_24px]"></div>
+               <div className="bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-700 relative z-10">
                  <div className="flex justify-between items-center mb-6">
-                   <p className="text-xs font-black text-white uppercase tracking-widest">Priority Requisition</p>
-                   <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-[10px] font-black uppercase">Critical</span>
+                   <p className="text-xs font-black text-white uppercase tracking-widest">Closest Match Found</p>
+                   <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-[10px] font-black uppercase flex items-center gap-1">
+                     <MapPin size={10} /> 2.4 KM
+                   </span>
                  </div>
-                 <div className="grid grid-cols-4 gap-2 mb-6">
-                    <div className="py-2 bg-red-600 text-white rounded-xl text-center font-black text-sm">O-</div>
-                    <div className="py-2 bg-slate-700 text-slate-400 rounded-xl text-center font-black text-sm">A+</div>
-                    <div className="py-2 bg-slate-700 text-slate-400 rounded-xl text-center font-black text-sm">B+</div>
+                 <div className="space-y-3 mb-6">
+                    <div className="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700">
+                      <span className="text-slate-400 text-xs font-bold uppercase">Source:</span>
+                      <span className="text-white text-xs font-black uppercase">Model Town Hub</span>
+                    </div>
+                    <div className="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700">
+                      <span className="text-slate-400 text-xs font-bold uppercase">Transit ETA:</span>
+                      <span className="text-red-400 text-xs font-black uppercase">~12 Minutes</span>
+                    </div>
                  </div>
                  <button className="w-full py-4 bg-white text-black font-black uppercase rounded-2xl flex items-center justify-center gap-2">
-                   Transmitting <Globe size={16} className="animate-pulse" />
+                   Dispatch Unit <ArrowRight size={16} />
                  </button>
                </div>
             </motion.div>
@@ -249,7 +255,6 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* Helper Component for Checkmarks */}
     </div>
   );
 };

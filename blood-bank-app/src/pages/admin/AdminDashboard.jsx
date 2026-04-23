@@ -7,13 +7,17 @@ import {
 } from 'recharts';
 import {
   Droplet, Activity, Users, AlertCircle, Search, Bell, Settings,
-  Menu, X, Plus, Filter, MoreVertical, MapPin, TrendingUp, ShieldAlert, Clock, Calendar
+  Menu, X, Plus, Filter, MoreVertical, MapPin, TrendingUp, ShieldAlert, Clock, Calendar, Zap
 } from 'lucide-react';
 import axios from 'axios';
 
 // Components
 import InboundDrawer from '../../components/InboundDrawer';
 import IntakeModal from '../admin/IntakeModal'; 
+import HubManager from './HubManager';
+import MatchModal from './MatchModal'; // <-- IMPORTED THE NEW MODAL
+import RecentInventory from './RecentInventory';
+import NetworkRadar from '../../components/NetworkRadar';
 
 // --- MOCK DATA ---
 const supplyData = [
@@ -52,6 +56,10 @@ const AdminDashboard = () => {
   const [isIntakeOpen, setIntakeOpen] = useState(false);
   const [requests, setRequests] = useState([]);
 
+  // --- NEW: Smart Match States ---
+  const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+
   // 1. Fetch Inventory & Stats
   const fetchDashboardData = async () => {
     try {
@@ -89,23 +97,19 @@ const AdminDashboard = () => {
     }
   };
 
-  // Match Logic
-  const findMatch = (group) => {
-    return inventory.find(unit => unit.bloodGroup === group && unit.status === 'available');
-  };
-
-  // Dispatch Logic
-  const handleDispatch = async (requestId, inventoryId) => {
+  // --- UPDATED: Smart Dispatch Logic ---
+  const handleSmartDispatch = async (inventoryId, requestId) => {
     try {
       await axios.delete(`http://localhost:5000/api/requests/resolve/${requestId}/${inventoryId}`);
+      setIsMatchModalOpen(false);
+      setSelectedRequest(null);
       fetchDashboardData(); 
       fetchRequests();      
     } catch (err) { 
-      alert("Dispatch failed"); 
+      alert("Dispatch failed: " + err.message); 
     }
   };
 
-  // THE FIX: Added fetchRequests to the initial load
   useEffect(() => {
     fetchDashboardData();
     fetchAppointments();
@@ -208,7 +212,7 @@ const AdminDashboard = () => {
               )}
             </AnimatePresence>
 
-            {/* --- HOSPITAL REQUESTS FEED --- */}
+            {/* --- HOSPITAL REQUESTS FEED (Upgraded to Smart Triage) --- */}
             <AnimatePresence>
               {requests.length > 0 && (
                 <motion.div 
@@ -217,30 +221,31 @@ const AdminDashboard = () => {
                 >
                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Hospital Requisitions</h3>
                   <div className="space-y-4">
-                    {requests.map(req => {
-                      const match = findMatch(req.bloodGroup);
-                      return (
-                        <div key={req._id} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                          <div>
-                            <p className="font-black text-gray-900">{req.hospitalName}</p>
+                    {requests.map(req => (
+                      <div key={req._id} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-slate-300 transition-colors">
+                        <div>
+                          <p className="font-black text-gray-900">{req.hospitalName}</p>
+                          <div className="flex items-center gap-3 mt-1">
                             <p className="text-xs font-bold text-red-600 uppercase">Needs: {req.bloodGroup}</p>
+                            <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${
+                              req.urgency === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-700'
+                            }`}>
+                              {req.urgency || "Routine"}
+                            </span>
                           </div>
-                          
-                          {match ? (
-                            <button 
-                              onClick={() => handleDispatch(req._id, match._id)}
-                              className="px-6 py-3 bg-green-600 text-white font-black text-[10px] rounded-xl hover:bg-green-700 transition-all shadow-lg shadow-green-200 uppercase"
-                            >
-                              Send {req.bloodGroup} (Match Found: {match.unitId})
-                            </button>
-                          ) : (
-                            <div className="flex items-center gap-2 text-slate-400 font-bold text-[10px] uppercase">
-                              <AlertCircle size={14} /> No Matching Stock
-                            </div>
-                          )}
                         </div>
-                      );
-                    })}
+                        
+                        <button 
+                          onClick={() => {
+                            setSelectedRequest(req);
+                            setIsMatchModalOpen(true);
+                          }}
+                          className="px-5 py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-all flex items-center gap-2 shadow-lg"
+                        >
+                          <Zap size={14} fill="currentColor" /> Smart Match
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -262,7 +267,7 @@ const AdminDashboard = () => {
                 </motion.div>
               ))}
             </div>
-
+            
             {/* Charts Section */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <motion.div variants={itemVariants} className="xl:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
@@ -300,9 +305,12 @@ const AdminDashboard = () => {
               </motion.div>
             </div>
           </motion.div>
+          <HubManager/>
+          <RecentInventory inventory={inventory}/>
+          <NetworkRadar/>
         </div>
       </main>
-
+      
       <InboundDrawer isOpen={isDrawerOpen} onClose={() => setDrawerOpen(false)} refreshData={fetchDashboardData} />
       
       {/* INTAKE MODAL */}
@@ -314,6 +322,14 @@ const AdminDashboard = () => {
           onComplete={() => { fetchDashboardData(); fetchAppointments(); }}
         />
       )}
+
+      {/* SMART MATCH MODAL */}
+      <MatchModal 
+        isOpen={isMatchModalOpen}
+        onClose={() => { setIsMatchModalOpen(false); setSelectedRequest(null); }}
+        request={selectedRequest}
+        onDispatch={handleSmartDispatch}
+      />
     </div>
   );
 };

@@ -9,6 +9,22 @@ const userSchema = new mongoose.Schema({
     required: true, 
     enum: ['donor', 'admin', 'hospital'] 
   },
+  
+  // 1. PHYSICAL ADDRESS (String)
+  address: { type: String, required: true },
+
+  // 2. GEOSPATIAL COORDINATES (For Map & Distance Math)
+  coords: {
+    lat: { 
+      type: Number, 
+      required: function() { return this.role === 'hospital'; } 
+    },
+    lng: { 
+      type: Number, 
+      required: function() { return this.role === 'hospital'; } 
+    }
+  },
+
   // Conditional Data
   bloodGroup: { 
     type: String, 
@@ -18,10 +34,10 @@ const userSchema = new mongoose.Schema({
     type: String, 
     required: function() { return this.role === 'hospital'; } 
   },
-  location: { type: String, required: true },
+
   createdAt: { type: Date, default: Date.now },
   
-  // STATS SECTION - Ensure these are initialized
+  // STATS SECTION
   donationsCount: { type: Number, default: 0, min: 0 },
   totalVolume: { type: Number, default: 0, min: 0 },
   lastDonationDate: { type: Date }  

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import NetworkRadar  from '../../components/NetworkRadar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Send, Activity, Trash2, MapPin, ShieldAlert, Clock, Crosshair, Building
+  Send, Activity, Trash2, MapPin, ShieldAlert, Clock, Crosshair, Building,
+  Network
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -36,22 +38,26 @@ const HospitalPortal = () => {
   };
 
   // --- 2. CREATE REQUEST ---
-  const handleRequest = async () => {
+    const handleRequest = async () => {
+    if (!location) return alert("Satellite Lock Required. Please allow location access.");
+    
     setIsLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/requests/create', {
+        await axios.post('http://localhost:5000/api/requests/create', {
         hospitalName: HOSPITAL_NAME,
         bloodGroup,
         urgency,
+        // SENDING THE REAL COORDINATES HERE
+        location: { lat: location.lat, lng: location.lng }, 
         status: 'pending'
-      });
-      fetchRequests(); // Refresh queue
+        });
+        fetchRequests();
     } catch (err) {
-      alert("Transmission Failed: " + err.message);
+        alert("Transmission Failed.");
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+    };
 
   // --- 3. CANCEL REQUEST ---
   const cancelRequest = async (id) => {
@@ -247,6 +253,7 @@ const HospitalPortal = () => {
 
         </div>
       </div>
+      <NetworkRadar />
     </div>
   );
 };

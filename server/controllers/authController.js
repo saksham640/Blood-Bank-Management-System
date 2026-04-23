@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 
 exports.registerController = async (req, res) => {
   try {
-    const { name, email, password, role, bloodGroup, licenseId, location } = req.body;
+    // 1. Destructure with the new 'address' and 'coords' naming
+    const { name, email, password, role, bloodGroup, licenseId, address, coords } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -13,7 +14,7 @@ exports.registerController = async (req, res) => {
     // Hash the password (Maximum Security)
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Save the user
+    // 2. Map the incoming data to our new Schema structure
     const newUser = new User({
       name, 
       email, 
@@ -21,12 +22,15 @@ exports.registerController = async (req, res) => {
       role, 
       bloodGroup, 
       licenseId, 
-      location
+      address, // Renamed from location
+      coords   // { lat, lng } from our Leaflet map
     });
+    
     await newUser.save();
 
     res.status(201).json({ success: true, message: "User Registered Successfully!" });
   } catch (error) {
+    console.error("Registration Error:", error.message);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
@@ -35,22 +39,20 @@ exports.loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    // 1. Find user and include sensitive data for verification
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 2. Compare Bcrypt Hash
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid Credentials" });
 
-    // 3. Create a Token that expires in 1 day
+    // 3. Create a Token
     const token = jwt.sign(
       { id: user._id, role: user.role }, 
-      process.env.JWT_SECRET, 
+      process.env.JWT_SECRET || 'your_fallback_secret', // Always use .env in production
       { expiresIn: '1d' }
     );
 
-    // 4. Send Response - FIXED: Changed 'id' to '_id' to sync with frontend
+    // 4. Send Response - Now including location data for the frontend Map
     res.status(200).json({
       success: true,
       token,
@@ -58,7 +60,9 @@ exports.loginController = async (req, res) => {
         _id: user._id, 
         name: user.name, 
         role: user.role,
-        bloodGroup: user.bloodGroup // Added so User.Hub shows real data
+        bloodGroup: user.bloodGroup,
+        address: user.address, // Added for UI display
+        coords: user.coords    // Added so the Map knows where 'Home' is
       }
     });
   } catch (error) {

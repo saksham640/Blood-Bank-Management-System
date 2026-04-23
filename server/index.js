@@ -8,13 +8,45 @@ const Inventory = require('./models/Inventory');
 const Appointment = require('./models/Appointment');
 const Request = require('./models/Request');
 const User = require('./models/User'); // <--- THE MISSING LINK THAT CAUSED THE 500 ERROR
-
+const Hub = require('./models/Hub');
 const app = express();
+
+//utility function
+// Calculate distance between two points in km using Haversine formula
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+  const d = R * c; 
+  return d; // Distance in km
+};
 
 // Middleware
 app.use(express.json());
 app.use(cors());
+// --- 5. NETWORK HUB ROUTES ---
+app.post('/api/hubs/create', async (req, res) => {
+  try {
+    const newHub = new Hub(req.body);
+    await newHub.save();
+    res.status(201).json({ success: true, message: "Network Hub Established." });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
+app.get('/api/hubs', async (req, res) => {
+  try {
+    const hubs = await Hub.find().sort({ createdAt: -1 });
+    res.json(hubs);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch network hubs" });
+  }
+});
 // --- 1. AUTH ROUTES ---
 app.post('/api/auth/register', require('./controllers/authController').registerController);
 app.post('/api/auth/login', require('./controllers/authController').loginController);
@@ -112,14 +144,15 @@ app.get('/api/appointments', async (req, res) => {
 // The Bulletproof Promote Route
 app.post('/api/inventory/promote', async (req, res) => {
   try {
-    const { appointmentId, userId, donorName, bloodGroup, volume } = req.body;
+    // 1. Extract hubId from the incoming payload
+    const { appointmentId, userId, donorName, bloodGroup, volume, hubId } = req.body;
 
-    // Safety Check
-    if (!userId || !appointmentId) {
-      return res.status(400).json({ success: false, message: "Missing User or Appointment ID" });
+    // Safety Check: Now explicitly requires the Hub ID
+    if (!userId || !appointmentId || !hubId) {
+      return res.status(400).json({ success: false, message: "Missing User, Appointment, or Hub ID" });
     }
 
-    // 1. Create the Inventory Unit
+    // 2. Create the Inventory Unit with Geospatial Tagging
     const unitId = `NEX-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
     const newUnit = new Inventory({
       unitId,
@@ -128,13 +161,15 @@ app.post('/api/inventory/promote', async (req, res) => {
       expiryDate: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000),
       status: 'available',
       donorName,
+      donorId: userId, // Links back to user profile
+      hubId // <--- Ties this specific unit to the physical location
     });
     await newUnit.save();
 
-    // 2. Mark Appointment as Completed
+    // 3. Mark Appointment as Completed
     await Appointment.findByIdAndUpdate(appointmentId, { status: 'completed' });
 
-    // 3. Update User Stats Safely
+    // 4. Update User Stats Safely
     await User.findByIdAndUpdate(
       userId, 
       {
@@ -144,13 +179,12 @@ app.post('/api/inventory/promote', async (req, res) => {
       { new: true, runValidators: false } // Bypasses the strict role validation during increment
     );
 
-    res.status(201).json({ success: true, message: "Unit Promoted & User Stats Updated" });
+    res.status(201).json({ success: true, message: "Unit Promoted & Tagged to Hub" });
   } catch (err) {
     console.error("🔥 PROMOTION ERROR:", err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
-
 
 // --- 4. HOSPITAL REQUEST ROUTES ---
 app.post('/api/requests/create', async (req, res) => {
@@ -169,6 +203,45 @@ app.get('/api/requests', async (req, res) => {
     res.json(requests);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch requests" });
+  }
+});
+
+app.get('/api/requests/match/:requestId', async (req, res) => {
+  try {
+    const request = await Request.findById(req.params.requestId);
+    if (!request) return res.status(404).json({ message: "Request not found" });
+
+    // 1. Find all available inventory of the requested blood group
+    const availableUnits = await Inventory.find({ 
+      bloodGroup: request.bloodGroup, 
+      status: 'available' 
+    }).populate('hubId');
+
+    // 2. Map and Calculate Real Distances
+    const rankedMatches = availableUnits.map(unit => {
+      // Ensure unit is actually tied to a hub
+      if (!unit.hubId || !unit.hubId.location) return null;
+
+      const distance = calculateDistance(
+        request.location.lat, 
+        request.location.lng,
+        unit.hubId.location.lat, 
+        unit.hubId.location.lng
+      );
+      
+      return {
+        ...unit._doc,
+        distance: Number(distance.toFixed(2)),
+        // 4 mins per km in Ludhiana traffic + 10 min prep/loading
+        estimatedTime: Math.round(distance * 4 + 10) 
+      };
+    })
+    .filter(unit => unit !== null) // Remove units with missing hub data
+    .sort((a, b) => a.distance - b.distance); 
+
+    res.json(rankedMatches);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
